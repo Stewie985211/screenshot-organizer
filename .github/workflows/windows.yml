@@ -1,0 +1,39 @@
+name: Windows checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: pnpm/action-setup@v6
+      - name: Configure project caches
+        run: |
+          $cache = Join-Path $env:GITHUB_WORKSPACE '.cache'
+          New-Item -ItemType Directory -Path (Join-Path $cache 'temp') -Force | Out-Null
+          "TEMP=$(Join-Path $cache 'temp')" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "TMP=$(Join-Path $cache 'temp')" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Test file operations
+        run: pnpm test
+      - name: Build renderer and main process
+        run: pnpm build
