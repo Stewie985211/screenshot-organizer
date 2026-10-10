@@ -21,6 +21,12 @@ Windows 桌面截图整理工具。使用本地视觉模型生成标题、摘要
 
 ## 环境与首次启动
 
+### 下载 Windows 便携版
+
+普通用户可到 [Releases 下载已编译的 Windows x64 便携版](https://github.com/Stewie985211/screenshot-organizer/releases/latest)，完整解压到 D 盘，双击“启动截图整理助手.cmd”。AI 识别需要先双击“准备识别环境.cmd”，再在软件中点击“准备本地模型”。无需安装 Node.js 或 pnpm。详见 [便携版使用说明](docs/windows-portable.md)。
+
+### 从源码构建
+
 当前支持 **Windows x64，项目和整理输出放在 D 盘**。开发环境使用 Node.js 24、pnpm 11；具体依赖由 lockfile 固定。本地模型需要可用的内存/显存，较慢的电脑可调整单张识别超时。
 
 在 PowerShell 7 中执行：
@@ -44,6 +50,8 @@ pwsh -NoProfile -File scripts/构建.ps1
 ```
 
 然后双击根目录的 **启动截图整理助手.cmd**。在界面中打开“本地识别”，点击“准备本地模型”；首次需要联网下载运行环境和模型，后续识别使用本机服务。源码仓库不包含模型权重、Ollama 二进制或 Electron 交付包。
+
+`scripts/准备本地环境.ps1` 使用已验证的 Ollama v0.40.2，并校验官方压缩包 SHA256。构建后运行 `pwsh -NoProfile -File scripts/打包便携版.ps1 -SkipBuild` 可生成不含个人数据的发行 ZIP 与 SHA256SUMS.txt，输出到 `output/releases`。
 
 开发时执行 `pnpm build`，再双击 **启动开发版.cmd**。主启动脚本优先使用已打包版本，修改后更新交付包需重新运行构建脚本。
 
