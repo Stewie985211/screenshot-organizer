@@ -1,0 +1,376 @@
+{
+  "schemaVersion": 1,
+  "datasetKind": "synthetic",
+  "clearCases": [
+    {
+      "id": "study_math",
+      "file": "assets\\监督测试截图\\01_study_math.png",
+      "expectedCategoryName": "学习资料",
+      "acceptableTitleKeywords": [
+        "导数",
+        "微分",
+        "数学"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "3b7e6d02f7dbfef11aca75ed92bb94a5ea2715ac143ee1754e3647fd8829ddd2"
+    },
+    {
+      "id": "study_physics",
+      "file": "assets\\监督测试截图\\02_study_physics.jpg",
+      "expectedCategoryName": "学习资料",
+      "acceptableTitleKeywords": [
+        "牛顿",
+        "物理",
+        "加速度",
+        "运动"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "ef96801402f552e4152140ab6929d0668d397c372a21a60cd1088ac7ef00866e"
+    },
+    {
+      "id": "study_english",
+      "file": "assets\\监督测试截图\\03_study_english.webp",
+      "expectedCategoryName": "学习资料",
+      "acceptableTitleKeywords": [
+        "英语",
+        "词汇",
+        "环境",
+        "English",
+        "Vocabulary"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "7e4b726f0b07d8886d424285f8fd9c7f6b506720fbb875b9e53713a5041e61f3"
+    },
+    {
+      "id": "study_history",
+      "file": "assets\\监督测试截图\\04_study_history.bmp",
+      "expectedCategoryName": "学习资料",
+      "acceptableTitleKeywords": [
+        "历史",
+        "新政",
+        "辛亥",
+        "近代史"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "3eff66484971112d85a3702d278e494ab3710da70e12c84bc42ce9bb001cd45c"
+    },
+    {
+      "id": "code_python",
+      "file": "assets\\监督测试截图\\05_code_python.png",
+      "expectedCategoryName": "代码与报错",
+      "acceptableTitleKeywords": [
+        "Python",
+        "pandas",
+        "模块",
+        "报错",
+        "安装"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "81749a4cb30ce46cfb6afb943619a229e2394fca60949d725014b6d25e3940fd"
+    },
+    {
+      "id": "code_node",
+      "file": "assets\\监督测试截图\\06_code_node.jpg",
+      "expectedCategoryName": "代码与报错",
+      "acceptableTitleKeywords": [
+        "端口",
+        "占用",
+        "5173",
+        "EADDRINUSE",
+        "Node",
+        "npm"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "ddd58ccc9d3b9095e0f435dc452b3ac7df8098e3ba1b4497f167f455973e990c"
+    },
+    {
+      "id": "code_typescript",
+      "file": "assets\\监督测试截图\\07_code_typescript.webp",
+      "expectedCategoryName": "代码与报错",
+      "acceptableTitleKeywords": [
+        "TypeScript",
+        "TS2322",
+        "类型",
+        "赋值",
+        "报错"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "9d6e8aec1205d5e58d6333e51e044dadc2a2f42c53bc7004007d9d71bdd5de5f"
+    },
+    {
+      "id": "code_git",
+      "file": "assets\\监督测试截图\\08_code_git.bmp",
+      "expectedCategoryName": "代码与报错",
+      "acceptableTitleKeywords": [
+        "Git",
+        "代码",
+        "修改",
+        "提交",
+        "状态"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "9ee71a1f754a472ed2bb4238e6e916e7b72a58774dc2fcaca1d949719b49013f"
+    },
+    {
+      "id": "chat_friend",
+      "file": "assets\\监督测试截图\\09_chat_friend.png",
+      "expectedCategoryName": "聊天记录",
+      "acceptableTitleKeywords": [
+        "食堂",
+        "约饭",
+        "同学",
+        "聊天",
+        "北门"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "f14913bcef19750b772f9179e347da5f807f5a34513078724f943aefb75641eb"
+    },
+    {
+      "id": "chat_group",
+      "file": "assets\\监督测试截图\\10_chat_group.jpg",
+      "expectedCategoryName": "聊天记录",
+      "acceptableTitleKeywords": [
+        "高数",
+        "学习",
+        "积分",
+        "聊天",
+        "小组"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "fd0632be15e99abf1fd813c24dae1900d3c0468eaa871783b81d0a97468bb610"
+    },
+    {
+      "id": "chat_family",
+      "file": "assets\\监督测试截图\\11_chat_family.webp",
+      "expectedCategoryName": "聊天记录",
+      "acceptableTitleKeywords": [
+        "家",
+        "周末",
+        "聊天",
+        "车票"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "91db0d6cf6c5dd01229fca86383ca641e7c83b4be170ab168f898d2a0bc3e1fa"
+    },
+    {
+      "id": "chat_english",
+      "file": "assets\\监督测试截图\\12_chat_english.bmp",
+      "expectedCategoryName": "聊天记录",
+      "acceptableTitleKeywords": [
+        "图书馆",
+        "见面",
+        "聊天",
+        "约",
+        "library",
+        "meeting"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "65b18f4dd5baceb2527df9d7945340218140faa06fe94a8929afb9b34dbbb346"
+    },
+    {
+      "id": "order_book",
+      "file": "assets\\监督测试截图\\13_order_book.png",
+      "expectedCategoryName": "购物订单",
+      "acceptableTitleKeywords": [
+        "订单",
+        "Python",
+        "书",
+        "编程"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "446734c18e0ef3023881cf7b26bcc3c9efa1b600188389d22857e3dec520edbf"
+    },
+    {
+      "id": "order_shoes",
+      "file": "assets\\监督测试截图\\14_order_shoes.jpg",
+      "expectedCategoryName": "购物订单",
+      "acceptableTitleKeywords": [
+        "运动鞋",
+        "鞋",
+        "订单",
+        "物流"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "29202a0ed095da7e05714686355efe9f70b2cd4ed7251d5c0abfa519207a61ac"
+    },
+    {
+      "id": "order_food",
+      "file": "assets\\监督测试截图\\15_order_food.webp",
+      "expectedCategoryName": "购物订单",
+      "acceptableTitleKeywords": [
+        "外卖",
+        "午餐",
+        "盖饭",
+        "订单"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "b7adb1d5446b0eb880c97a2374d701658b0a6e1bc814e67b8fdab511d3b25ca0"
+    },
+    {
+      "id": "order_english",
+      "file": "assets\\监督测试截图\\16_order_english.bmp",
+      "expectedCategoryName": "购物订单",
+      "acceptableTitleKeywords": [
+        "订单",
+        "充电",
+        "线",
+        "USB",
+        "Order"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "6a13c46793e158215733eff58ba7042174de340a5319578649098bc06fecd0f8"
+    },
+    {
+      "id": "work_meeting",
+      "file": "assets\\监督测试截图\\17_work_meeting.png",
+      "expectedCategoryName": "工作文档",
+      "acceptableTitleKeywords": [
+        "会议",
+        "纪要",
+        "项目",
+        "截图"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "d7e0a5498bb7417cf6c8f9e0b161b85bfb233736a521e72e55cf2de0a1f7255a"
+    },
+    {
+      "id": "work_schedule",
+      "file": "assets\\监督测试截图\\18_work_schedule.jpg",
+      "expectedCategoryName": "工作文档",
+      "acceptableTitleKeywords": [
+        "排期",
+        "项目",
+        "任务",
+        "进度"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "b7d7c0de0fd2ab9931770814ed24fef3b81b2bb7b8c04d49925839ada082a4bd"
+    },
+    {
+      "id": "work_report",
+      "file": "assets\\监督测试截图\\19_work_report.webp",
+      "expectedCategoryName": "工作文档",
+      "acceptableTitleKeywords": [
+        "周报",
+        "部门",
+        "工作",
+        "汇报"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "79ebf7f57c54eddc4c76aa95899f676fcae638be637097fe1285842ccfc78d2a"
+    },
+    {
+      "id": "work_minutes_en",
+      "file": "assets\\监督测试截图\\20_work_minutes_en.bmp",
+      "expectedCategoryName": "工作文档",
+      "acceptableTitleKeywords": [
+        "会议",
+        "纪要",
+        "产品",
+        "Meeting",
+        "Minutes"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "004ca4a4a6caf5145e9c9921a39ee8c371f42897a8a1f719433a91fbaf99a4c4"
+    },
+    {
+      "id": "life_recipe",
+      "file": "assets\\监督测试截图\\21_life_recipe.png",
+      "expectedCategoryName": "生活其他",
+      "acceptableTitleKeywords": [
+        "番茄",
+        "炒蛋",
+        "食谱",
+        "做法"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "4be672ee2d2b85edbca5568ba3cb4249c0f94ec4b689e136ae5a3572f8a4c214"
+    },
+    {
+      "id": "life_trip",
+      "file": "assets\\监督测试截图\\22_life_trip.jpg",
+      "expectedCategoryName": "生活其他",
+      "acceptableTitleKeywords": [
+        "出游",
+        "旅行",
+        "周末",
+        "青岛",
+        "栈桥"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "ca21c7949f5617e80b38cdde1c6850bc8210d9d2b7d9dcbadacac13348b6df74"
+    },
+    {
+      "id": "life_game",
+      "file": "assets\\监督测试截图\\23_life_game.webp",
+      "expectedCategoryName": "生活其他",
+      "acceptableTitleKeywords": [
+        "游戏",
+        "关卡",
+        "得分",
+        "结算"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-clear",
+      "sha256": "e50844d6afe7666d8139f52c187b81513cb4dbf31faf52ab73788b710c0661e7"
+    },
+    {
+      "id": "life_sunset",
+      "file": "assets\\监督测试截图\\24_life_sunset.png",
+      "expectedCategoryName": "生活其他",
+      "acceptableTitleKeywords": [
+        "夕阳",
+        "日落",
+        "风景",
+        "湖",
+        "海",
+        "山",
+        "太阳"
+      ],
+      "expectNeedsReview": false,
+      "kind": "synthetic-no-text",
+      "sha256": "bf61edfafb05727bd023e8facdc038b632e5e8596cce993c57d34dfd48165ffb"
+    }
+  ],
+  "edgeCases": [
+    {
+      "file": "assets\\监督测试截图\\edge_blank.png",
+      "expected": "review-required"
+    },
+    {
+      "file": "assets\\监督测试截图\\edge_uniform.png",
+      "expected": "review-required"
+    },
+    {
+      "file": "assets\\监督测试截图\\edge_corrupt.png",
+      "expected": "isolated-failure"
+    },
+    {
+      "file": "assets\\监督测试截图\\edge_unsupported.txt",
+      "expected": "not-scanned"
+    }
+  ],
+  "note": "合成数据可复现；不代表真实用户截图准确率。标题关键词是初筛，最终仍需核对描述是否忠实。"
+}

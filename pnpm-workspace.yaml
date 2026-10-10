@@ -1,0 +1,12 @@
+packages:
+  - .
+allowBuilds:
+  electron: true
+  electron-winstaller: false
+  esbuild: true
+  sharp: true
+minimumReleaseAgeExclude:
+  - vite@8.3.4
+storeDir: .cache/pnpm
+cacheDir: .cache/pnpm-cache
+confirmModulesPurge: false

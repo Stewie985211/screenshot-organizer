@@ -1,0 +1,15 @@
+:root {
+  --canvas: #F6F7FB;
+  --paper: #FFFFFF;
+  --ink: #262A3D;
+  --primary: #6554C0;
+  --primary-tint: #F0EDF9;
+  --success: #33806B;
+  --warning: #A36B25;
+  --muted: #9298A9;
+  --line: #E9EBF2;
+  --font-display: 'Bahnschrift', 'Segoe UI Variable Display', 'Microsoft YaHei', sans-serif;
+  --font-body: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  --font-data: 'Bahnschrift', 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'Cascadia Mono', 'Consolas', 'Microsoft YaHei', monospace;
+}

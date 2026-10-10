@@ -1,0 +1,71 @@
+{
+  "name": "screenshot-organizer",
+  "version": "0.2.1",
+  "private": true,
+  "description": "完全本地运行的截图识别、分类与可撤销整理工具",
+  "author": "Stewie985211",
+  "main": "dist/electron/main/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.main.json && tsc -p tsconfig.renderer.json --noEmit && vite build",
+    "typecheck": "tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit",
+    "start": "electron .",
+    "test": "tsx --test tests/*.test.ts",
+    "fixtures": "py -3.13 scripts/监督-生成测试样本.py",
+    "benchmark": "tsx scripts/benchmark.ts",
+    "test:desktop": "tsx scripts/desktop-smoke.ts",
+    "test:integration": "tsx scripts/integration-smoke.ts",
+    "package": "pnpm build && electron-builder --win --x64 --dir",
+    "test:output": "tsx scripts/output-directory-smoke.ts"
+  },
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "sharp": "0.35.5",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.4",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "electron": "44.7.0",
+    "electron-builder": "26.15.3",
+    "playwright": "1.64.0",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vite": "8.3.4"
+  },
+  "build": {
+    "appId": "local.stewie.screenshotorganizer",
+    "productName": "ScreenshotOrganizer",
+    "directories": {
+      "output": "output/desktop"
+    },
+    "electronDist": "node_modules/electron/dist",
+    "npmRebuild": false,
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "**/*.node",
+      "**/sharp/**",
+      "**/@img/**"
+    ],
+    "win": {
+      "target": "dir",
+      "executableName": "ScreenshotOrganizer",
+      "signAndEditExecutable": false
+    }
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Stewie985211/screenshot-organizer.git"
+  },
+  "homepage": "https://github.com/Stewie985211/screenshot-organizer#readme",
+  "bugs": {
+    "url": "https://github.com/Stewie985211/screenshot-organizer/issues"
+  },
+  "packageManager": "pnpm@11.25.0"
+}
