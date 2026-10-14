@@ -24,7 +24,8 @@ async function main(){try{
   app=await _electron.launch({executablePath:executable,args:[],env:{...process.env,SCREENSHOT_PROJECT_ROOT:root,TEMP:path.join(root,'data/temp'),TMP:path.join(root,'data/temp')},timeout:60000});
   page=await app.firstWindow();page.setDefaultTimeout(15000);page.on('pageerror',error=>errors.push(error.message));
   await page.locator('.desktop-shell').waitFor();
-  assert.equal(await app.evaluate(({app})=>app.getVersion()),'0.2.1');
+  const expectedVersion=JSON.parse(await fs.readFile(path.join(project,'package.json'),'utf8')).version;
+  assert.equal(await app.evaluate(({app})=>app.getVersion()),expectedVersion);
   await choose(source);await page.getByRole('button',{name:'选择文件夹',exact:true}).click();
   await page.getByRole('button',{name:'添加来源文件夹',exact:true}).click();await page.getByRole('button',{name:'保存来源并扫描'}).click();await idle();
   await page.locator('.sidebar-bottom').getByRole('button',{name:'设置',exact:true}).click();
@@ -51,7 +52,7 @@ async function main(){try{
   await choose('C:\\临时整理测试');await page.getByRole('button',{name:'选择整理目录'}).click();await idle();await page.getByRole('button',{name:'保存设置',exact:true}).click();await idle();
   assert.ok((await page.locator('.operation-notice').innerText()).includes('D 盘'));assert.equal((await state()).settings.outputFolder,target);check('C 盘目标被拒绝，原设置保留');
   assert.deepEqual(errors,[]);check('桌面页面无运行错误');
-  await fs.writeFile(path.join(base,'result.json'),JSON.stringify({success:true,version:'0.2.1',executable,base,checks,errors,appAsarSHA256:createHash('sha256').update(await fs.readFile(path.join(path.dirname(executable),'resources/app.asar'))).digest('hex')},null,2));
+  await fs.writeFile(path.join(base,'result.json'),JSON.stringify({success:true,version:expectedVersion,executable,base,checks,errors,appAsarSHA256:createHash('sha256').update(await fs.readFile(path.join(path.dirname(executable),'resources/app.asar'))).digest('hex')},null,2));
   console.log(`REPORT ${path.join(base,'result.json')}`);
 }catch(error){
   await fs.mkdir(base,{recursive:true});await fs.writeFile(path.join(base,'result.json'),JSON.stringify({success:false,base,checks,errors,error:String(error)},null,2));throw error;
