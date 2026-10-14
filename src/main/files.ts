@@ -33,7 +33,9 @@ export async function validateDirectoryChain(directory: string): Promise<void> {
   }
 }
 export async function scanImages(settings: Settings, store: Store, root: string, onItem: (entry: ImageEntry, count: number) => void, shouldStop: () => boolean): Promise<ImageEntry[]> {
-  const excluded = [settings.outputFolder, ...['data/app','data/models','data/runtime-profile','data/temp','data/logs','tools','output','.cache','node_modules','dist','.git'].map(n => path.join(root,n))];
+  const recovering=store.recovery();
+  const recoveryPaths=new Set(recovering.flatMap(record=>[record.item.source,record.item.target,record.stagingPath??'']).map(file=>path.resolve(file).toLowerCase()));
+  const excluded = [settings.outputFolder, ...['data','tools','output','.cache','node_modules','dist','.git'].map(n => path.join(root,n))];
   const seen = new Set<string>(); const entries: ImageEntry[] = [];
   async function walk(directory: string): Promise<void> {
     if (shouldStop() || excluded.some(p => isInside(p, directory))) return;
@@ -41,18 +43,28 @@ export async function scanImages(settings: Settings, store: Store, root: string,
     for (const item of (await fs.readdir(canonical, { withFileTypes: true })).sort((a,b) => a.name.localeCompare(b.name))) {
       if (shouldStop()) return;
       const file = path.join(canonical, item.name);
+      if(recoveryPaths.has(path.resolve(file).toLowerCase()))continue;
       const info = await fs.lstat(file).catch(() => undefined);
       if (!info || info.isSymbolicLink() || excluded.some(p => isInside(p,file))) continue;
       if (info.isDirectory() && settings.recursive) { await walk(file); continue; }
       if (!info.isFile() || !SUPPORTED_EXTENSIONS.has(path.extname(file).toLowerCase())) continue;
       let hash = ''; let width = 0; let height = 0; let error: string | undefined;
-      try { hash = await fileHash(file); const metadata = await (await openImage(file)).metadata(); width = metadata.width ?? 0; height = metadata.height ?? 0; if (!width || !height) throw new Error('图片没有有效尺寸'); }
-      catch (failure) { error = `读取图片失败：${(failure as Error).message}`; }
+      try {
+        hash=await fileHash(file);const image=await openImage(file),metadata=await image.metadata();
+        width=metadata.autoOrient.width; height=metadata.autoOrient.height;
+        if(!width||!height)throw new Error('图片没有有效尺寸');
+        // Header metadata alone can succeed even when JPEG pixel data is truncated.
+        await image.clone().resize({width:32,height:32,fit:'inside',withoutEnlargement:true}).png().toBuffer();
+      }
+      catch (failure) { width=0;height=0;error = `读取图片失败：${(failure as Error).message}`; }
       const previous = store.imageAt(file);
-      const unchanged = previous && previous.hash === hash && !error;
+      const unchanged = previous && previous.hash === hash && !error && (previous.confirmed||previous.width===width&&previous.height===height);
+      let analysis=unchanged?previous.analysis:undefined,confirmed=unchanged?previous.confirmed:undefined;
+      if(analysis&&!settings.categories.some(category=>category.id===analysis!.categoryId&&category.enabled)){
+        analysis={...analysis,categoryId:settings.categories.find(category=>category.enabled)?.id??'',needsReview:true};confirmed=undefined;
+      }
       const entry: ImageEntry = { id: previous?.id ?? randomUUID(), path:file, originalName:path.basename(file), hash, bytes:info.size, mtimeMs:info.mtimeMs, width,height,
-        status: error ? 'error' : unchanged && previous.analysis ? previous.analysis.needsReview ? 'review' : 'ready' : 'pending',
-        analysis: unchanged ? previous.analysis : undefined, confirmed: unchanged ? previous.confirmed : undefined, error };
+        status: error ? 'error' : analysis ? analysis.needsReview ? 'review' : 'ready' : 'pending',analysis,confirmed,error };
       store.putImage(entry); entries.push(entry); onItem(entry,entries.length);
     }
   }
@@ -68,6 +80,7 @@ export async function scanImages(settings: Settings, store: Store, root: string,
 }
 export async function buildPlan(choices: PlanChoice[], settings: Settings, store: Store): Promise<OrganizePlan> {
   if (!choices.length) throw new Error('请至少选择一张图片');
+  if(store.recovery().length)throw new Error('有未完成的文件操作，请先恢复或回滚后再整理');
   await validateDirectoryChain(settings.outputFolder);
   const ids = new Set<string>(); const reserved = new Set<string>(); const items: PlanItem[] = [];
   for (const choice of choices) {
@@ -94,15 +107,15 @@ export async function buildPlan(choices: PlanChoice[], settings: Settings, store
   store.savePlan(plan); return plan;
 }
 export async function recognitionImages(file: string): Promise<string[]> {
-  const image = (await openImage(file)).rotate(); const metadata = await image.metadata();
-  const width = metadata.width ?? 0; const height = metadata.height ?? 0;
+  const image = (await openImage(file)).autoOrient(); const metadata = await image.metadata();
+  const {width,height}=metadata.autoOrient;
   if (height > width * 3 && height > 2500) {
-    const overview = await (await openImage(file)).resize({ width:500,height:800,fit:'inside',withoutEnlargement:true }).png().toBuffer();
+    const overview = await image.clone().resize({ width:500,height:800,fit:'inside',withoutEnlargement:true }).png().toBuffer();
     const images = [overview.toString('base64')];
     // Up to three readable segments keep VRAM bounded for very long screenshots.
     const segmentHeight = Math.min(1800,height);
     const positions = [...new Set([0, Math.floor((height-segmentHeight)/2), height-segmentHeight])];
-    for (const top of positions) images.push((await (await openImage(file)).extract({left:0,top,width,height:segmentHeight}).resize({width:700,height:900,fit:'inside',withoutEnlargement:true}).png().toBuffer()).toString('base64'));
+    for (const top of positions) images.push((await image.clone().extract({left:0,top,width,height:segmentHeight}).resize({width:700,height:900,fit:'inside',withoutEnlargement:true}).png().toBuffer()).toString('base64'));
     return images;
   }
   return [(await image.resize({width:1200,height:1200,fit:'inside',withoutEnlargement:true}).png().toBuffer()).toString('base64')];

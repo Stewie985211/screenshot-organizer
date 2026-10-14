@@ -33,6 +33,15 @@ export class Store {
   putImage(entry: ImageEntry): void {
     this.db.prepare('INSERT INTO images VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET path=excluded.path,json=excluded.json').run(entry.id, entry.path, JSON.stringify(entry));
   }
+  completeMove(record: MoveRecord,entry?: ImageEntry): void {
+    // A scan can leave a different, now stale identity at the restored pathname.
+    // Only the move engine calls this after validating the physical file.
+    this.db.exec('BEGIN IMMEDIATE');
+    try {
+      if(entry){this.db.prepare('DELETE FROM images WHERE path=? COLLATE NOCASE AND id<>?').run(entry.path,entry.id);this.putImage(entry);}
+      this.putMove(record);this.db.exec('COMMIT');
+    } catch(error) { this.db.exec('ROLLBACK');throw error; }
+  }
   removeImage(id: string): void { this.db.prepare('DELETE FROM images WHERE id=?').run(id); }
   cached(key: string): AnalysisResult | undefined { return this.get<AnalysisResult>('analyses', key); }
   cache(key: string, analysis: AnalysisResult): void { this.db.prepare('INSERT OR REPLACE INTO analyses VALUES (?,?)').run(key, JSON.stringify(analysis)); }

@@ -45,7 +45,7 @@ for(const point of ['prepared','copied','published','verified','source-deleted',
 }
 test('停止整理仅完成当前项，不执行剩余项目',async()=>{const s=await setup();try{
   const extra=path.join(s.source,'第二张.png');await fs.copyFile(s.file,extra);const images=await scanImages(s.settings,s.store,s.root,()=>{},()=>false);const plan=await buildPlan(images.map(i=>({imageId:i.id,categoryId:'study',title:'同一内容'})),s.settings,s.store);let stop=false;
-  const batch=await new MoveEngine(s.store,()=>{stop=true;}).apply(plan,()=>stop);assert.equal(batch.records.length,1);assert.equal(batch.records[0].stage,'committed');assert.equal((await fs.readdir(s.source)).length,1);
+  const batch=await new MoveEngine(s.store,()=>{stop=true;}).apply(plan,()=>stop);assert.equal(batch.totalItems,plan.items.length);assert.equal(batch.records.length,1);assert.equal(batch.records[0].stage,'committed');assert.equal((await fs.readdir(s.source)).length,1);
 }finally{s.store.close();}});
 test('待恢复目标经过外部修改时拒绝删除',async()=>{const s=await setup();try{
   let fired=false;const batch=await new MoveEngine(s.store,()=>{},point=>{if(!fired&&point==='verified'){fired=true;throw new Error('中断');}}).apply(s.plan,()=>false);await fs.appendFile(s.plan.items[0].target,'外部修改');await assert.rejects(()=>new MoveEngine(s.store).recover(batch.records[0].id,'rollback'));assert.equal(await exists(s.file),true);assert.equal(await exists(s.plan.items[0].target),true);

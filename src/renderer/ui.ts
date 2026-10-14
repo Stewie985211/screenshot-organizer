@@ -8,7 +8,7 @@ const visuals:Record<string,Pick<VisualCategory,'icon'|'color'|'tint'>>={
   work:{icon:'work',color:'#697F9B',tint:'#EDF0F5'},life:{icon:'sun',color:'#B09149',tint:'#F7F2E6'}
 };
 export const visualCategory=(category:Category):VisualCategory=>({...category,...(visuals[category.id]??{icon:'folder',color:'#7885A1',tint:'#EEF0F6'})});
-export const visualImage=(image:ImageEntry):VisualImage=>({...image,preview:image.width&&image.height?`shot://image/${image.id}`:undefined,kind:image.height>image.width*3?'long':'normal'});
+export const visualImage=(image:ImageEntry):VisualImage=>({...image,preview:image.width&&image.height?`shot://image/${image.id}?v=${image.hash}`:undefined,kind:image.height>image.width*3?'long':'normal'});
 export const TIME=new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit',hour12:false});
 const DAY=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'});
 export function dateOf(ms:number){const p=DAY.formatToParts(new Date(ms));return ['year','month','day'].map(k=>p.find(v=>v.type===k)!.value).join('-');}
@@ -24,9 +24,11 @@ export function recordLabel(record:MoveRecord){
   if(record.error||record.stage==='failed'||record.stage==='conflict')return '需要处理';
   return {prepared:'待恢复',copied:'待恢复',verified:'待恢复',committed:'已整理',undone:'已恢复原名',failed:'失败',conflict:'冲突'}[record.stage];
 }
-export function batchLabel(records:MoveRecord[]){
+export function batchLabel(records:MoveRecord[],totalItems=records.length){
+  if(!records.length)return '未执行';
   if(records.some(r=>r.error||r.stage==='failed'||r.stage==='conflict'))return '需要处理';
   if(records.some(r=>['prepared','copied','verified'].includes(r.stage)))return '待恢复';
   if(records.length&&records.every(r=>r.stage==='undone'))return '已撤销';
+  if(records.length<totalItems)return '部分完成';
   return records.some(r=>r.stage==='undone')?'部分撤销':'已整理';
 }

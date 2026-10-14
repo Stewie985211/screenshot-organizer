@@ -28,15 +28,18 @@ export interface PlanItem {
 }
 export interface OrganizePlan { id: string; createdAt: string; outputFolder: string; items: PlanItem[] }
 export type MoveStage = 'prepared' | 'copied' | 'verified' | 'committed' | 'failed' | 'undone' | 'conflict';
+export interface FileIdentity { dev: string; ino: string }
 export interface MoveRecord {
   id: string; batchId: string; item: PlanItem; stage: MoveStage; error?: string;
   createdAt: string; updatedAt: string;
   targetOwned: boolean;
   restoreOwned?: boolean;
+  targetIdentity?: FileIdentity;
+  restoreIdentity?: FileIdentity;
   direction?: 'forward' | 'undo';
   stagingPath?: string;
 }
-export interface Batch { id: string; createdAt: string; kind: 'organize'; planId: string }
+export interface Batch { id: string; createdAt: string; kind: 'organize'; planId: string; totalItems?: number }
 export interface BatchView extends Batch { records: MoveRecord[] }
 export interface Progress {
   phase: 'scan' | 'analyze' | 'apply' | 'undo' | 'setup'; done: number; total: number;

@@ -22,7 +22,7 @@ export function assertOutputLocation(root: string, directory: string, sources: s
   if (path.parse(target).root.toUpperCase() !== 'D:\\') throw new Error('请选择 D 盘上的整理目录');
   if (target.toLowerCase() === path.parse(target).root.toLowerCase()) throw new Error('请选择具体的整理文件夹，不能使用盘符根目录');
   if (sources.some(source => isInside(target, source))) throw new Error('整理目录不能等于来源文件夹或包含来源文件夹，请选择单独的子文件夹');
-  if (['data', 'tools', 'dist', 'node_modules', '.cache', '.git'].some(folder => isInside(path.join(root, folder), target)))
+  if (['data', 'tools', 'dist', 'node_modules', '.cache', '.git'].some(folder => isInside(path.join(root, folder), target)||isInside(target,path.join(root,folder))))
     throw new Error('不能使用程序运行数据目录作为整理目录');
 }
 export function ensureProjectDirectories(root: string): void {

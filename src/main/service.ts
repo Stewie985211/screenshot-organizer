@@ -24,7 +24,11 @@ export class OrganizerService {
   }
   async saveSettings(input: Settings): Promise<Settings> {
     if(this.busy) throw new Error('任务运行中，请先停止后再修改设置');
-    const settings=settingsSchema.parse(input);settings.sourceFolders=[...new Set(await Promise.all(settings.sourceFolders.map(p=>fs.realpath(p))))];
+    return this.exclusive(async()=>{
+    const settings=settingsSchema.parse(input);
+    for(const folder of settings.sourceFolders)await validateDirectoryChain(folder);
+    const folders=await Promise.all(settings.sourceFolders.map(p=>fs.realpath(p)));
+    settings.sourceFolders=[...new Map(folders.map(folder=>[folder.toLowerCase(),folder])).values()];
     settings.outputFolder=path.resolve(settings.outputFolder);
     assertOutputLocation(this.root,settings.outputFolder,settings.sourceFolders);
     if (!settings.categories.some(c=>c.enabled)) throw new Error('请至少启用一个分类');
@@ -32,20 +36,29 @@ export class OrganizerService {
     for(const category of settings.categories) {category.name=cleanName(category.name,30);if(ids.has(category.id)||names.has(category.name.toLowerCase())) throw new Error('分类编号或名称不能重复');ids.add(category.id);names.add(category.name.toLowerCase());}
     for(const folder of settings.sourceFolders) await validateDirectoryChain(folder);
     await validateDirectoryChain(settings.outputFolder);this.store.setSettings(settings);return settings;
+    });
+  }
+  private async exclusive<T>(task:()=>Promise<T>):Promise<T>{
+    if(this.busy)throw new Error('已有任务正在运行，请等待完成或点击停止');
+    this.busy=true;try{return await task();}finally{this.busy=false;}
   }
   private async job<T>(phase: Progress['phase'], task: ()=>Promise<T>): Promise<T> {
-    if(this.busy) throw new Error('已有任务正在运行，请等待完成或点击停止');
-    this.busy=true;this.stopped=false;this.controller=new AbortController();
+    return this.exclusive(async()=>{
+    this.stopped=false;this.controller=new AbortController();
     this.progress({phase,done:0,total:0,message:'开始处理',running:true});
     try {return await task();}
-    finally {this.busy=false;this.controller=undefined;this.progress({phase,done:0,total:0,message:this.stopped?'任务已停止':'任务处理结束',running:false});}
+    finally {this.controller=undefined;this.progress({phase,done:0,total:0,message:this.stopped?'任务已停止':'任务处理结束',running:false});}
+    });
   }
   async scan(): Promise<ImageEntry[]> {return this.job('scan',async()=>{
     const settings=this.store.settings();if(!settings.sourceFolders.length) throw new Error('请先选择截图文件夹');
     return scanImages(settings,this.store,this.root,(image,count)=>this.progress({phase:'scan',done:count,total:0,message:image.originalName,running:true,image}),()=>this.stopped);
   });}
   async analyze(ids: string[],force=false): Promise<ImageEntry[]> {return this.job('analyze',async()=>{
-    z.array(z.string().uuid()).max(20000).parse(ids);const settings=this.store.settings();await this.runtime.start();
+    force=z.boolean().parse(force);
+    ids=[...new Set(z.array(z.string().uuid()).max(20000).parse(ids))];const settings=this.store.settings();
+    if(this.store.recovery().length)throw new Error('有未完成的文件操作，请先恢复或回滚后再识别');
+    await this.runtime.start(this.controller!.signal);this.controller!.signal.throwIfAborted();
     const status=await this.runtime.status();if(!status.modelReady) throw new Error('本地模型尚未准备，请点击“准备本地模型”');
     let done=0;const entries:ImageEntry[]=[];
     for(const id of new Set(ids)) {
@@ -53,7 +66,10 @@ export class OrganizerService {
       const entry=this.store.image(id);if(!entry||entry.status==='moved') continue;
       if(!settings.sourceFolders.some(folder=>isInside(folder,entry.path))) throw new Error('图片不在当前来源目录中');
       if(!entry.width||!entry.height) {entries.push(entry);continue;}
+      if(force){entry.confirmed=undefined;entry.analysis=undefined;entry.error=undefined;entry.status='pending';this.store.putImage(entry);this.progress({phase:'analyze',done,total:ids.length,message:entry.originalName,running:true,image:entry});}
       try {
+        await validateDirectoryChain(path.dirname(entry.path));
+        const info=await fs.lstat(entry.path);if(!info.isFile()||info.isSymbolicLink())throw new Error('原文件不再是普通图片文件，请重新扫描');
         if(await fileHash(entry.path)!==entry.hash) throw new Error('原文件已修改，请重新扫描');
         const key=analysisCacheKey(entry,settings.categories,this.runtime.digest());
         let result:AnalysisResult;
@@ -62,6 +78,8 @@ export class OrganizerService {
         }else{
           const cached=force?undefined:this.store.cached(key);
           result=cached??await analyzeImage(entry,settings.categories,settings.recognitionTimeoutMs,this.controller!.signal);
+          if(await fileHash(entry.path)!==entry.hash)throw new Error('原文件在识别过程中发生变化，请重新扫描');
+          this.controller!.signal.throwIfAborted();
           if(!cached)this.store.cache(key,result);
           entry.confirmed=undefined;
         }
@@ -74,9 +92,10 @@ export class OrganizerService {
     }
     return entries;
   });}
-  async plan(choices: PlanChoice[]): Promise<OrganizePlan> {if(this.busy)throw new Error('请先等待当前任务完成');return buildPlan(choicesSchema.parse(choices),this.store.settings(),this.store);}
+  async plan(choices: PlanChoice[]): Promise<OrganizePlan> {return this.exclusive(()=>buildPlan(choicesSchema.parse(choices),this.store.settings(),this.store));}
   async apply(planId: string):Promise<BatchView>{return this.job('apply',async()=>{
     const plan=this.store.plan(z.string().uuid().parse(planId));if(!plan)throw new Error('预览不存在或已执行，请重新预览');
+    if(this.store.recovery().length)throw new Error('有未完成的文件操作，请先恢复或回滚后再整理');
     const settings=this.store.settings();
     assertOutputLocation(this.root,settings.outputFolder,settings.sourceFolders);
     if(path.resolve(plan.outputFolder)!==path.resolve(settings.outputFolder))throw new Error('整理目录已修改，请重新预览');
