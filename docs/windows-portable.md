@@ -1,10 +1,12 @@
 # Windows 便携版使用说明
 
-下载入口：[GitHub Releases](https://github.com/Stewie985211/screenshot-organizer/releases/latest)。选择 `ScreenshotOrganizer-v0.2.1-windows-x64.zip`，这是已经编译好的 Windows x64 程序，不需要安装 Node.js、pnpm 或其他开发工具。GitHub 自动提供的 Source code 是源码包。
+下载入口：[GitHub Releases](https://github.com/Stewie985211/screenshot-organizer/releases/latest)。选择 `ScreenshotOrganizer-v0.2.2-windows-x64.zip`，这是已经编译好的 Windows x64 程序，不需要安装 Node.js、pnpm 或其他开发工具。GitHub 自动提供的 Source code 是源码包。
+
+v0.2.2 包含文件移动与恢复、识别重试、缩略图刷新和推理进程清理等修复，详见 [审查与修复记录](audit-2026-10-14.md)。
 
 ## 首次使用
 
-1. 将 ZIP **完整解压到 D 盘**，例如 `D:\Apps\ScreenshotOrganizer-v0.2.1-windows-x64`。不要在压缩包中启动，也不要只复制 EXE。
+1. 将 ZIP **完整解压到 D 盘**，例如 `D:\Apps\ScreenshotOrganizer-v0.2.2-windows-x64`。不要在压缩包中启动，也不要只复制 EXE。
 2. 双击根目录的 **启动截图整理助手.cmd**，可以查看和手动整理截图。
 3. 使用 AI 识别前，双击 **准备识别环境.cmd**。它从 Ollama 官方发行页下载已验证的 `v0.40.2` Windows x64 运行环境，约 1.4 GB，核对 SHA256 后解压到本软件的 `tools/ollama`。
 4. 重新打开软件，在 **本地识别** 中点击 **准备本地模型**，下载 `qwen3-vl:4b-instruct`。模型另需数 GB 下载空间；建议 D 盘预留至少 15 GB 空间。实际识别速度取决于电脑内存、显存及处理器。
@@ -27,6 +29,10 @@
 - `output/整理后的截图`：默认整理目录，也可在设置中选择其他 D 盘目录。
 
 迁移时保留整个软件文件夹，并重新选择来源与输出。旧整理历史记录了原绝对路径。升级时先备份整个目录，尤其是 `data`；便携包中没有预置个人设置或数据库。
+
+## 从旧版升级
+
+关闭旧版并备份整个目录。把新包完整解压到新的 D 盘目录；如需沿用模型、设置和操作记录，将旧目录的 `data` 和 `tools` 文件夹复制到新目录同级位置。打开新版后核对来源与整理输出位置。旧历史仍使用原绝对路径，保留旧目录可方便核对和回退。
 
 ## 常见情况
 
