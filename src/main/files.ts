@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { openImage } from './images.js';
+import { isVideoFile, probeVideo, videoFrame } from './videos.js';
 import { isInside } from './paths.js';
 import type { Store } from './store.js';
 import type { ImageEntry, Settings, PlanChoice, OrganizePlan, PlanItem } from '../shared/types.js';
@@ -32,7 +33,7 @@ export async function validateDirectoryChain(directory: string): Promise<void> {
     const parent = path.dirname(current); if (parent === current) break; current = parent;
   }
 }
-export async function scanImages(settings: Settings, store: Store, root: string, onItem: (entry: ImageEntry, count: number) => void, shouldStop: () => boolean): Promise<ImageEntry[]> {
+export async function scanImages(settings: Settings, store: Store, root: string, onItem: (entry: ImageEntry, count: number) => void, shouldStop: () => boolean, signal?: AbortSignal): Promise<ImageEntry[]> {
   const recovering=store.recovery();
   const recoveryPaths=new Set(recovering.flatMap(record=>[record.item.source,record.item.target,record.stagingPath??'']).map(file=>path.resolve(file).toLowerCase()));
   const excluded = [settings.outputFolder, ...['data','tools','output','.cache','node_modules','dist','.git'].map(n => path.join(root,n))];
@@ -47,23 +48,33 @@ export async function scanImages(settings: Settings, store: Store, root: string,
       const info = await fs.lstat(file).catch(() => undefined);
       if (!info || info.isSymbolicLink() || excluded.some(p => isInside(p,file))) continue;
       if (info.isDirectory() && settings.recursive) { await walk(file); continue; }
-      if (!info.isFile() || !SUPPORTED_EXTENSIONS.has(path.extname(file).toLowerCase())) continue;
+      if (!info.isFile() || (!SUPPORTED_EXTENSIONS.has(path.extname(file).toLowerCase()) && !isVideoFile(file))) continue;
+      const mediaType = isVideoFile(file) ? 'video' : 'image';
+      let durationSeconds: number | undefined;
       let hash = ''; let width = 0; let height = 0; let error: string | undefined;
       try {
-        hash=await fileHash(file);const image=await openImage(file),metadata=await image.metadata();
+        hash=await fileHash(file);
+        if (mediaType === 'video') {
+          const metadata = await probeVideo(root, file, signal);
+          width = metadata.width; height = metadata.height; durationSeconds = metadata.durationSeconds;
+          await videoFrame(root, file, durationSeconds / 2, metadata.streamIndex, signal);
+        } else {
+        const image=await openImage(file),metadata=await image.metadata();
         width=metadata.autoOrient.width; height=metadata.autoOrient.height;
         if(!width||!height)throw new Error('图片没有有效尺寸');
         // Header metadata alone can succeed even when JPEG pixel data is truncated.
         await image.clone().resize({width:32,height:32,fit:'inside',withoutEnlargement:true}).png().toBuffer();
+        }
       }
-      catch (failure) { width=0;height=0;error = `读取图片失败：${(failure as Error).message}`; }
+      catch (failure) { width=0;height=0;error = `读取${mediaType==='video'?'视频':'图片'}失败：${(failure as Error).message}`; }
+      if (shouldStop()) return;
       const previous = store.imageAt(file);
       const unchanged = previous && previous.hash === hash && !error && (previous.confirmed||previous.width===width&&previous.height===height);
       let analysis=unchanged?previous.analysis:undefined,confirmed=unchanged?previous.confirmed:undefined;
       if(analysis&&!settings.categories.some(category=>category.id===analysis!.categoryId&&category.enabled)){
         analysis={...analysis,categoryId:settings.categories.find(category=>category.enabled)?.id??'',needsReview:true};confirmed=undefined;
       }
-      const entry: ImageEntry = { id: previous?.id ?? randomUUID(), path:file, originalName:path.basename(file), hash, bytes:info.size, mtimeMs:info.mtimeMs, width,height,
+      const entry: ImageEntry = { id: previous?.id ?? randomUUID(), path:file, originalName:path.basename(file), hash, bytes:info.size, mtimeMs:info.mtimeMs, width,height,mediaType,durationSeconds,
         status: error ? 'error' : analysis ? analysis.needsReview ? 'review' : 'ready' : 'pending',analysis,confirmed,error };
       store.putImage(entry); entries.push(entry); onItem(entry,entries.length);
     }

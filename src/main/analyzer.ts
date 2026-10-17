@@ -5,10 +5,11 @@ import { openImage } from './images.js';
 import { MODEL_ENDPOINT } from './runtime.js';
 import type { AnalysisResult, Category, ImageEntry } from '../shared/types.js';
 import { DEFAULT_MODEL } from '../shared/types.js';
+import { VIDEO_PROMPT_VERSION } from './videos.js';
 export const PROMPT_VERSION='screenshot-v1.5-oriented-images';
 const responseSchema=z.object({categoryId:z.string(),title:z.string().trim().min(1).max(120),summary:z.string().max(600),needsReview:z.boolean()});
 export function analysisCacheKey(image: ImageEntry, categories: Category[], digest: string): string {
-  return createHash('sha256').update(JSON.stringify([image.hash,PROMPT_VERSION,digest,categories])).digest('hex');
+  return createHash('sha256').update(JSON.stringify([image.hash,image.mediaType==='video'?VIDEO_PROMPT_VERSION:PROMPT_VERSION,digest,categories])).digest('hex');
 }
 export async function analyzeImage(image: ImageEntry, categories: Category[], timeoutMs: number, signal: AbortSignal, diagnostics?:(response:unknown)=>void): Promise<AnalysisResult> {
   signal=AbortSignal.any([signal,AbortSignal.timeout(timeoutMs)]);

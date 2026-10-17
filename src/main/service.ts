@@ -5,6 +5,7 @@ import { Store } from './store.js';
 import { LocalRuntime } from './runtime.js';
 import { MoveEngine } from './moves.js';
 import { analyzeImage, analysisCacheKey } from './analyzer.js';
+import { analyzeVideo } from './video-analyzer.js';
 import { cleanName, scanImages, buildPlan, fileHash, exists, validateDirectoryChain } from './files.js';
 import { ensureProjectDirectories, isInside, assertOutputLocation } from './paths.js';
 import type { Settings, AppState, ImageEntry, AnalysisResult, PlanChoice, Progress, OrganizePlan, BatchView, RuntimeStatus } from '../shared/types.js';
@@ -52,12 +53,20 @@ export class OrganizerService {
   }
   async scan(): Promise<ImageEntry[]> {return this.job('scan',async()=>{
     const settings=this.store.settings();if(!settings.sourceFolders.length) throw new Error('请先选择截图文件夹');
-    return scanImages(settings,this.store,this.root,(image,count)=>this.progress({phase:'scan',done:count,total:0,message:image.originalName,running:true,image}),()=>this.stopped);
+    return scanImages(settings,this.store,this.root,(image,count)=>this.progress({phase:'scan',done:count,total:0,message:image.originalName,running:true,image}),()=>this.stopped,this.controller!.signal);
   });}
   async analyze(ids: string[],force=false): Promise<ImageEntry[]> {return this.job('analyze',async()=>{
     force=z.boolean().parse(force);
     ids=[...new Set(z.array(z.string().uuid()).max(20000).parse(ids))];const settings=this.store.settings();
     if(this.store.recovery().length)throw new Error('有未完成的文件操作，请先恢复或回滚后再识别');
+    // Force means the old approval is invalid even if model startup fails or
+    // the user stops immediately, before the first inference begins.
+    if(force)for(const id of ids){
+      const entry=this.store.image(id);if(!entry||entry.status==='moved'||!entry.width||!entry.height)continue;
+      if(!settings.sourceFolders.some(folder=>isInside(folder,entry.path)))throw new Error('图片不在当前来源目录中');
+      entry.confirmed=undefined;entry.analysis=undefined;entry.error=undefined;entry.status='pending';this.store.putImage(entry);
+      this.progress({phase:'analyze',done:0,total:ids.length,message:entry.originalName,running:true,image:entry});
+    }
     await this.runtime.start(this.controller!.signal);this.controller!.signal.throwIfAborted();
     const status=await this.runtime.status();if(!status.modelReady) throw new Error('本地模型尚未准备，请点击“准备本地模型”');
     let done=0;const entries:ImageEntry[]=[];
@@ -66,7 +75,6 @@ export class OrganizerService {
       const entry=this.store.image(id);if(!entry||entry.status==='moved') continue;
       if(!settings.sourceFolders.some(folder=>isInside(folder,entry.path))) throw new Error('图片不在当前来源目录中');
       if(!entry.width||!entry.height) {entries.push(entry);continue;}
-      if(force){entry.confirmed=undefined;entry.analysis=undefined;entry.error=undefined;entry.status='pending';this.store.putImage(entry);this.progress({phase:'analyze',done,total:ids.length,message:entry.originalName,running:true,image:entry});}
       try {
         await validateDirectoryChain(path.dirname(entry.path));
         const info=await fs.lstat(entry.path);if(!info.isFile()||info.isSymbolicLink())throw new Error('原文件不再是普通图片文件，请重新扫描');
@@ -77,7 +85,9 @@ export class OrganizerService {
           result={...entry.confirmed,summary:entry.analysis?.summary??'已人工确认标题和分类。',needsReview:false};
         }else{
           const cached=force?undefined:this.store.cached(key);
-          result=cached??await analyzeImage(entry,settings.categories,settings.recognitionTimeoutMs,this.controller!.signal);
+          result=cached??await (entry.mediaType==='video'
+            ? analyzeVideo(this.root,entry,settings.categories,settings.recognitionTimeoutMs,this.controller!.signal)
+            : analyzeImage(entry,settings.categories,settings.recognitionTimeoutMs,this.controller!.signal));
           if(await fileHash(entry.path)!==entry.hash)throw new Error('原文件在识别过程中发生变化，请重新扫描');
           this.controller!.signal.throwIfAborted();
           if(!cached)this.store.cache(key,result);

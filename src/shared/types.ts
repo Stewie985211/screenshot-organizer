@@ -16,6 +16,8 @@ export interface AnalysisResult { categoryId: string; title: string; summary: st
 export type ImageStatus = 'pending' | 'ready' | 'review' | 'error' | 'moved';
 export interface ImageEntry {
   id: string; path: string; originalName: string; hash: string; bytes: number;
+  /** 旧记录缺省为 image，保持已有图片与整理历史兼容。 */
+  mediaType?: 'image' | 'video'; durationSeconds?: number;
   mtimeMs: number; width: number; height: number; status: ImageStatus;
   analysis?: AnalysisResult; error?: string;
   /** 已确认整理计划的最终结果；原图变更或显式强制识别后失效。 */

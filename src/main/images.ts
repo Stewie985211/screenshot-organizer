@@ -3,7 +3,10 @@ import path from 'node:path';
 import sharp, { type Sharp } from 'sharp';
 import { decodeBmp } from './bmp.js';
 export async function openImage(file: string): Promise<Sharp> {
-  if (path.extname(file).toLowerCase()!=='.bmp') return sharp(file);
+  // libvips can keep filename-backed WebP readers cached on Windows, locking
+  // original files against rename/unlink after previews finish. Decode a buffer
+  // so the move engine never competes with a retained libvips file handle.
+  if (path.extname(file).toLowerCase()!=='.bmp') return sharp(await fs.readFile(file));
   const buffer=await fs.readFile(file);
   if (buffer.length<54 || buffer.toString('ascii',0,2)!=='BM') throw new Error('BMP 文件头无效');
   const width=buffer.readInt32LE(18);const height=Math.abs(buffer.readInt32LE(22));

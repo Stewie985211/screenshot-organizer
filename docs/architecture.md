@@ -11,7 +11,7 @@ Electron 主进程从 `.screenshot-organizer-root` 定位项目，或使用用�
 1. Store 保存设置、图片、识别缓存、冻结计划、批次与逐项移动记录。
 2. scanImages 扫描来源，排除输出、运行数据和目录链接，计算内容哈希和尺寸。
 3. LocalRuntime 管理项目内 Ollama，默认地址为 127.0.0.1:21434；只停止自行启动的进程树。
-4. analyzeImage 使用 qwen3-vl:4b-instruct，为可见内容生成标题、摘要和分类；不确定项交给人工确认。
+4. analyzeImage 使用 qwen3-vl:4b-instruct，为可见内容生成标题、摘要和分类；analyzeVideo 用 FFmpeg 在内存抽取 3～6 帧，复用同一模型且不分析声音。默认待确认，可逐项核对，也可明确批量采用建议。
 5. buildPlan 校验选择并计算分类目录与最终名称，预览阶段不移动图片。
 6. MoveEngine 根据冻结计划完成复制、校验、发布、删除源文件和日志提交。撤销与恢复使用同一文件完整性原则。
 
@@ -31,3 +31,7 @@ getState / onProgress 提供真实状态和进度；chooseFolders / saveSettings
 - output：默认整理目录和实验报告；用户可单独选择 D 盘其他输出目录。
 
 运行数据默认被 Git 忽略。唯一提交的 data 内容是合成样本 manifest。
+
+## 一键整理
+
+renderer 的 quick-organize.ts 在同一个界面任务锁内串联 getState、analyze、buildPlan 和 applyPlan。一次批量确认后，冻结本次选择和草稿，自动识别并采用可用建议；占位标题、读取/识别失败和无效分类明确跳过。停止识别或计划建立后检查取消标记，禁止停止后继续启动移动。主进程文件校验、日志、撤销及恢复保持原有实现。

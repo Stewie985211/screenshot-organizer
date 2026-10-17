@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import { OrganizerService } from './service.js';
 import { resolveProjectRoot, ensureProjectDirectories } from './paths.js';
 import { previewImage } from './images.js';
+import { isVideoFile, previewVideo } from './videos.js';
 import type { Progress } from '../shared/types.js';
 const root=resolveProjectRoot(__dirname);ensureProjectDirectories(root);
 for(const [key,folder] of [['appData','data/browser'],['userData','data/browser/user'],['sessionData','data/browser/session'],['logs','data/logs'],['temp','data/temp'],['crashDumps','data/browser/crashes']] as const){const directory=path.join(root,folder);fs.mkdirSync(directory,{recursive:true});app.setPath(key,directory);}
@@ -19,7 +20,7 @@ function handle(name:string,task:(...args:any[])=>unknown):void{
 if(hasLock)app.whenReady().then(async()=>{
   service=new OrganizerService(root,sendProgress);
   protocol.handle('shot',async request=>{
-    try{const url=new URL(request.url);if(url.hostname!=='image')return new Response('Not found',{status:404});const file=await service!.previewPath(decodeURIComponent(url.pathname.slice(1)));const data=await previewImage(file,url.searchParams.get('full')==='1');return new Response(new Uint8Array(data),{headers:{'Content-Type':'image/png','Cache-Control':'no-store'}});}
+    try{const url=new URL(request.url);if(url.hostname!=='image')return new Response('Not found',{status:404});const file=await service!.previewPath(decodeURIComponent(url.pathname.slice(1)));const full=url.searchParams.get('full')==='1';const data=await (isVideoFile(file)?previewVideo(root,file,full):previewImage(file,full));return new Response(new Uint8Array(data),{headers:{'Content-Type':'image/png','Cache-Control':'no-store'}});}
     catch{return new Response('Image unavailable',{status:404});}
   });
   handle('getState',()=>service!.state());

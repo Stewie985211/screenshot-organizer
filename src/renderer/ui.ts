@@ -1,14 +1,15 @@
 import type {Category,ImageEntry,MoveRecord} from '../shared/types';
 
 export type VisualCategory=Category&{icon:string;color:string;tint:string};
-export type VisualImage=ImageEntry&{preview?:string;kind:'long'|'normal'};
+export type VisualImage=ImageEntry&{preview?:string;kind:'long'|'normal'|'video'};
 const visuals:Record<string,Pick<VisualCategory,'icon'|'color'|'tint'>>={
   study:{icon:'book',color:'#8870BF',tint:'#F0EBF7'},code:{icon:'code',color:'#5483B9',tint:'#EAF1FA'},
   chat:{icon:'chat',color:'#4D957C',tint:'#EAF5EF'},shopping:{icon:'bag',color:'#BD7D61',tint:'#FCF0E9'},
   work:{icon:'work',color:'#697F9B',tint:'#EDF0F5'},life:{icon:'sun',color:'#B09149',tint:'#F7F2E6'}
 };
 export const visualCategory=(category:Category):VisualCategory=>({...category,...(visuals[category.id]??{icon:'folder',color:'#7885A1',tint:'#EEF0F6'})});
-export const visualImage=(image:ImageEntry):VisualImage=>({...image,preview:image.width&&image.height?`shot://image/${image.id}?v=${image.hash}`:undefined,kind:image.height>image.width*3?'long':'normal'});
+export const visualImage=(image:ImageEntry):VisualImage=>({...image,preview:image.width&&image.height?`shot://image/${image.id}?v=${image.hash}`:undefined,kind:image.mediaType==='video'?'video':image.height>image.width*3?'long':'normal'});
+export function durationOf(seconds=0){const total=Math.max(0,Math.round(seconds));return `${Math.floor(total/60)}:${String(total%60).padStart(2,'0')}`;}
 export const TIME=new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit',hour12:false});
 const DAY=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'});
 export function dateOf(ms:number){const p=DAY.formatToParts(new Date(ms));return ['year','month','day'].map(k=>p.find(v=>v.type===k)!.value).join('-');}

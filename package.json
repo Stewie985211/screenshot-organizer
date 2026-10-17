@@ -1,8 +1,8 @@
 {
   "name": "screenshot-organizer",
-  "version": "0.2.2",
+  "version": "0.4.0",
   "private": true,
-  "description": "完全本地运行的截图识别、分类与可撤销整理工具",
+  "description": "完全本地运行的图片与视频抽样识别、一键分类与可撤销整理工具",
   "author": "Stewie985211",
   "main": "dist/electron/main/index.js",
   "scripts": {
@@ -16,7 +16,9 @@
     "test:integration": "tsx scripts/integration-smoke.ts",
     "package": "pnpm build && electron-builder --win --x64 --dir",
     "test:output": "tsx scripts/output-directory-smoke.ts",
-    "test:audit": "tsx scripts/audit-desktop.ts"
+    "test:audit": "tsx scripts/audit-desktop.ts",
+    "test:quick": "tsx scripts/quick-organize-smoke.ts",
+    "test:selection": "tsx scripts/selection-smoke.ts"
   },
   "dependencies": {
     "react": "19.3.0",

@@ -13,3 +13,5 @@
 - Qwen3-VL 模型: https://huggingface.co/Qwen/Qwen3-VL-4B-Instruct
 
 Ollama 运行环境通过准备脚本从官方发行页下载并校验发行包 SHA256；模型由 Ollama 按指定标签下载。仓库的 MIT 许可证不替代第三方组件或模型的许可证。分发二进制时保留 Electron、图像库等组件的许可证文件。
+
+视频解码使用单独安装的 FFmpeg / ffprobe：https://ffmpeg.org/ 。本仓库和便携包不附带 FFmpeg 二进制；其编译选项、编解码器和许可证以使用者安装的发行版本为准。

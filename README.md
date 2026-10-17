@@ -1,24 +1,30 @@
 # 拾图 · Screenshot Organizer
 
-Windows 桌面截图整理工具。使用本地视觉模型生成标题、摘要和分类，人工核对后按“日期_内容标题”移动到分类文件夹，支持撤销与中断恢复。
+Windows 桌面图片与视频整理工具。使用本地视觉模型生成标题、摘要和分类，可一键整理或逐项核对后按“日期_内容标题”移动到分类文件夹，支持撤销与中断恢复。
 
-**Local screenshot organization for Windows: recognize, review, preview, move, and undo.**
+**Local image and video organization for Windows: recognize, classify, organize, and undo.**
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Windows checks](https://github.com/Stewie985211/screenshot-organizer/actions/workflows/windows.yml/badge.svg)](https://github.com/Stewie985211/screenshot-organizer/actions/workflows/windows.yml)
 
 ![三栏界面示意，使用合成截图](docs/images/library.png)
 
+## v0.4.0：视频识别与一键整理
+
+新增 MP4、MOV、MKV、WebM、AVI、M4V 视频抽样识别，图片与视频共用已有 `qwen3-vl:4b-instruct`，无需云端或 API Key。底部新增“一键整理”，确认一次后自动识别、分类、改名并移动，无需在右侧逐项核对。可用建议直接采用，读取/识别失败或占位标题跳过并说明原因，成功项仍可撤销。
+
+同时修复扫描后全选禁用、识别与编辑后丢失选择，以及 Windows 上 WebP 预览占用原文件的问题。源码与 [Windows x64 便携版](https://github.com/Stewie985211/screenshot-organizer/releases/tag/v0.4.0) 同步为 **0.4.0**。视频需另外安装 FFmpeg/ffprobe，程序包不重复附带模型或视频解码器。详见 [视频与一键整理](docs/video-and-quick-organize.md)。
+
 ## v0.2.2 修复更新
 
-2026-10-14：修复文件恢复与撤销、路径和并发校验、识别失败重试、损坏图片和 EXIF 方向、缩略图刷新及推理进程清理等 19 类问题。核心回归 63/63、实际打包版整合回归 24/24、专项桌面回归 4/4 通过。详见 [审查与修复记录](docs/audit-2026-10-14.md)。源码与 Windows x64 便携版均为 0.2.2，可直接 [下载修复版便携包](https://github.com/Stewie985211/screenshot-organizer/releases/tag/v0.2.2)。
+2026-10-14：修复文件恢复与撤销、路径和并发校验、识别失败重试、损坏图片和 EXIF 方向、缩略图刷新及推理进程清理等 19 类问题。核心回归 63/63、实际打包版整合回归 24/24、专项桌面回归 4/4 通过。详见 [审查与修复记录](docs/audit-2026-10-14.md)。该版本仍保留在 [历史发布页](https://github.com/Stewie985211/screenshot-organizer/releases/tag/v0.2.2)。
 
 ## 功能
 
 - 三栏界面：分类导航、日期分组图库、截图核对面板；支持筛选、搜索标题/文件名/摘要、网格和列表。
 - 本机 Ollama + `qwen3-vl:4b-instruct` 生成分类、标题和摘要；模型准备完成后可以离线识别。
-- 自定义分类名称、描述和启用状态；允许人工修改标题和分类，待确认项须人工核对。
-- 多个来源目录、子文件夹扫描；支持 PNG、JPEG、WebP 和常见非压缩/位掩码 BMP。
+- 自定义分类名称、描述和启用状态；允许人工修改标题和分类；可逐项核对，也可一次确认批量采用可用建议。
+- 多个来源目录、子文件夹扫描；支持 PNG、JPEG、WebP 和常见非压缩/位掩码 BMP，以及 MP4、MOV、MKV、WebM、AVI、M4V。
 - 展示完整移动路径，确认后按分类建立子文件夹、移动和重命名；同名文件追加序号。
 - 批次记录、恢复原名和原位置、处理中断后的继续或回滚。
 - 模型、缓存、数据库和临时文件保存在项目中；用户选择的截图输出目录可位于 D 盘其他位置。
@@ -28,6 +34,8 @@ Windows 桌面截图整理工具。使用本地视觉模型生成标题、摘要
 ### 下载 Windows 便携版
 
 普通用户可到 [Releases 下载已编译的 Windows x64 便携版](https://github.com/Stewie985211/screenshot-organizer/releases/latest)，完整解压到 D 盘，双击“启动截图整理助手.cmd”。AI 识别需要先双击“准备识别环境.cmd”，再在软件中点击“准备本地模型”。无需安装 Node.js 或 pnpm。详见 [便携版使用说明](docs/windows-portable.md)。
+
+视频识别另需 `ffmpeg` 和 `ffprobe`：安装后确保两者位于 PATH 并重新打开软件，或将二者放到软件根目录的 `tools/ffmpeg`。图片功能不需要 FFmpeg。
 
 ### 从源码构建
 
@@ -62,11 +70,11 @@ pwsh -NoProfile -File scripts/构建.ps1
 ## 日常使用
 
 1. “选择文件夹”→“添加来源文件夹”→“保存来源并扫描”。
-2. 点击“开始识别”，等候本地模型生成建议。
-3. 点开截图，核对右侧标题和分类；待确认项勾选“我已核对截图内容”，再“确认并加入整理”。
-4. 勾选要整理的截图，点击底部“整理预览”，检查新文件名和完整目标路径。
-5. 点击“确认整理”，将原文件移动到目标分类目录并重命名。
-6. 需要恢复时，在“整理记录”点击“撤销本次整理”。
+2. 快速方式：点击底部“一键整理”，确认处理范围和目录后“开始一键整理”。未识别项会先识别；无需逐项核对。有勾选时只处理所选，未勾选时处理当前筛选结果。
+3. 逐项方式：点击“开始识别”，在右侧修改标题和分类。待确认项勾选“我已核对素材内容”，再“确认并加入整理”。选中素材后“整理预览”，核对文件名与路径，再“确认整理”。
+4. 需要恢复时，在“整理记录”点击“撤销本次整理”。
+
+模型建议可能有误，一键方式的确认框会明确说明；没有可用建议的项目保留原位并显示原因。视频按抽样画面分类，不分析声音、对白或每一帧。
 
 在“设置”可选择 D 盘上的整理目录，然后“保存设置”。默认是 `output/整理后的截图`；每个分类使用一个子文件夹。可以选择来源里的独立输出子目录，扫描会排除该目录。来源本身、包含来源的目录、盘符根目录和程序运行数据目录不能作为整理目标。
 
@@ -76,13 +84,20 @@ pwsh -NoProfile -File scripts/构建.ps1
 
 ```powershell
 pnpm typecheck
-pnpm test
+pnpm test # 视频测试需要 FFmpeg/ffprobe
 pnpm build
 ```
 
-核心文件检查共 63 项，使用测试目录内的合成图，覆盖不覆盖移动、撤销冲突、各阶段中断恢复、人工结果持久化、输出位置及扫描排除。
+核心文件检查共 86 项，使用测试目录内的合成图，覆盖不覆盖移动、撤销冲突、各阶段中断恢复、人工结果持久化、输出位置及扫描排除。
 
-包含 24 张清晰合成截图与边界样本，以及独立监督脚本。它们用来复现问题，不代表真实截图识别准确率。本地模型准备并打包后，可以运行：
+包含 24 张清晰合成截图与边界样本，以及独立监督脚本。它们用来复现问题，不代表真实截图识别准确率。打包后可运行新功能桌面回归（模拟模型响应，实际解码与文件操作）：
+
+```powershell
+pnpm test:quick
+pnpm test:selection
+```
+
+历史完整模型实验需要先准备本地模型，旧版桌面脚本的界面文案可能需要适配；复现旧版本时可以运行：
 
 ```powershell
 pnpm test:integration -- --packaged
@@ -115,7 +130,7 @@ docs/           使用、架构与验证说明
 - 输出和撤销目的地需支持硬链接，当前主要验证范围是 D 盘 NTFS。
 - 原位置被占用或图片后来被修改时，保留文件并报告冲突。
 - 常见 BMP 可读取；RLE 压缩 BMP 暂不支持。
-- 本地模型可能判断错误，移动前应核对标题、分类和路径。
+- 本地模型可能判断错误，逐项核对可提高准确度；一键整理会批量采用可用建议。
 - 不要单独搬走 `output/desktop/win-unpacked`；应用需要根目录标记、`tools` 与 `data/models`。迁移整个目录后重新选择来源/输出，旧历史仍使用原绝对路径。
 
 ## 许可证

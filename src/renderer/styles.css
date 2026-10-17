@@ -177,6 +177,11 @@ h1>span { font-size: 13px; font-weight: 400; font-family: var(--font-data); colo
 .selection-clear { margin-left: 12px; font-size: 9px; color: #A9A5B8; }
 .preview-button { height: 39px; padding-left: 16px; }
 .preview-button>svg { order: 1; margin-left: 2px; }
+.selection-bar .selection-actions { flex-shrink: 0; gap: 8px; }
+.quick-result-list { margin-top: 18px; max-height: 320px; overflow-y: auto; }
+.quick-result-list>div { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.quick-result-list strong { font-size: 12px; overflow-wrap: anywhere; }
+.quick-result-list p { margin: 5px 0 0; font-size: 11px; line-height: 1.6; color: #736B83; overflow-wrap: anywhere; }
 .inspector { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; background: var(--paper); border-left: 1px solid var(--line); padding: 0 23px; }
 .inspector-header { display: flex; align-items: center; justify-content: space-between; padding-top: 24px; padding-bottom: 18px; color: #83899B; font-size: 11px; }
 .inspector-scroll { overflow: auto; flex: 1; min-height: 0; padding-bottom: 20px; }
@@ -444,6 +449,9 @@ h1>span { font-size: 13px; font-weight: 400; font-family: var(--font-data); colo
 .plan-destination code { color: #9476A8; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+.video-label { position: absolute; bottom: 9px; right: 9px; pointer-events: none; color: white; background: #22283cdd; border-radius: 6px; padding: 4px 7px; font-size: 10px; }
+.video-note { padding: 10px 12px; border-radius: 8px; background: #f0ebf7; color: #725f8a; font-size: 11px; line-height: 1.7; margin-bottom: 16px; }
+.gallery-options { flex-wrap: wrap; }
 @keyframes appear { from { opacity: 0; } to { opacity: 1; } }
 @keyframes toast-in { from { opacity: 0; transform: translate(-50%,8px); } to { opacity: 1; transform: translate(-50%,0); } }
 
