@@ -33,6 +33,17 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Typecheck
         run: pnpm typecheck
+      - name: Prepare FFmpeg for video tests
+        run: |
+          if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue) -or -not (Get-Command ffprobe -ErrorAction SilentlyContinue)) {
+            choco install ffmpeg --yes --no-progress --limit-output
+            if ($LASTEXITCODE -ne 0) { throw 'FFmpeg installation failed' }
+            $env:Path += ';C:\ProgramData\chocolatey\bin'
+          }
+          (Split-Path (Get-Command ffmpeg).Source) | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+          (Split-Path (Get-Command ffprobe).Source) | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+          ffmpeg -version
+          ffprobe -version
       - name: Test file operations
         run: pnpm test
       - name: Build renderer and main process
